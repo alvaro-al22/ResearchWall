@@ -1,4 +1,4 @@
-import { memo, useState, useRef, useEffect } from 'react';
+import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import type { NodeProps, Node } from '@xyflow/react';
 import { TAG_COLOR } from '../constants/caseTags';
@@ -16,6 +16,7 @@ export type CharacterNodeData = {
   residence?: string;
   profession?: string;
   tags?: string[];
+  flipped?: boolean;
 };
 
 
@@ -35,13 +36,8 @@ const STATUS_TEXT: Record<string, string> = {
   unknown: 'Desconocido',
 };
 
-function CharacterNode({ data, dragging }: NodeProps<CharacterNodeType>) {
-  const [flipped, setFlipped] = useState(false);
-  const wasDragging = useRef(false);
-
-  useEffect(() => {
-    if (dragging) wasDragging.current = true;
-  }, [dragging]);
+function CharacterNode({ data }: NodeProps<CharacterNodeType>) {
+  const flipped = data.flipped ?? false;
 
   const statusIcon = STATUS_BADGE[data.status ?? 'unknown'] ?? '';
   const statusText = STATUS_TEXT[data.status ?? 'unknown'] ?? '';
@@ -66,10 +62,6 @@ function CharacterNode({ data, dragging }: NodeProps<CharacterNodeType>) {
     <div
       style={{ width: '170px', position: 'relative' }}
       className="select-none"
-      onClick={() => {
-        if (wasDragging.current) { wasDragging.current = false; return; }
-        setFlipped(f => !f);
-      }}
     >
       {/* Single connection point at top center */}
       <Handle type="source" position={Position.Top} className="w-3 h-3 bg-zinc-500 border-2 border-zinc-900" />

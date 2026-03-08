@@ -106,11 +106,20 @@ export default function BoardView({ project, onBack }: Props) {
     setPendingConn({ sourceId: params.source, targetId: params.target });
   }, []);
 
+  // Single-click a node → flip card
+  const onNodeClick = useCallback((_evt: MouseEvent, node: Node) => {
+    setNodes(prev => prev.map(n =>
+      n.id === node.id ? { ...n, data: { ...n.data, flipped: !n.data.flipped } } : n,
+    ));
+  }, [setNodes]);
+
   // Double-click a node → open CharacterForm for editing
   const onNodeDoubleClick = useCallback((_evt: MouseEvent, node: Node) => {
+    // Reset flip so modal opens on the front face
+    setNodes(prev => prev.map(n => n.id === node.id ? { ...n, data: { ...n.data, flipped: false } } : n));
     const char = characters.find(c => c.id === node.id);
     if (char) { setEditChar(char); setShowCharForm(true); }
-  }, [characters]);
+  }, [characters, setNodes]);
 
   // Click an edge → open RelationshipForm for editing
   const onEdgeClick = useCallback((_evt: MouseEvent, edge: Edge) => {
@@ -477,6 +486,7 @@ export default function BoardView({ project, onBack }: Props) {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onNodeClick={onNodeClick}
           onNodeDragStop={onNodeDragStop}
           onNodeDoubleClick={onNodeDoubleClick}
           onEdgeClick={onEdgeClick}
@@ -486,7 +496,8 @@ export default function BoardView({ project, onBack }: Props) {
           edgeTypes={edgeTypes}
           fitView
           connectionMode={ConnectionMode.Loose}
-          panOnDrag={[0, 2]}
+          panOnDrag={[2]}
+          zoomOnDoubleClick={false}
           className="bg-[#1a1a1a]"
           deleteKeyCode="Delete"
         >
@@ -496,9 +507,8 @@ export default function BoardView({ project, onBack }: Props) {
             nodeColor={n => String((n.data as { color?: string }).color ?? '#555')}
             maskColor="rgba(10,10,15,0.75)"
             position="top-right"
-            style={{ top: 10 }}
           />
-          <Panel position="top-left" className="bg-zinc-800/80 backdrop-blur text-zinc-400 text-xs px-3 py-2 rounded-lg border border-zinc-700">
+          <Panel position="top-left" style={{ pointerEvents: 'none' }} className="bg-zinc-800/80 backdrop-blur text-zinc-400 text-xs px-3 py-2 rounded-lg border border-zinc-700">
             Clic: voltear tarjeta · Doble clic: editar · Clic der.: mover lienzo · <kbd className="bg-zinc-700 px-1 rounded">Del</kbd>: eliminar
           </Panel>
         </ReactFlow>
