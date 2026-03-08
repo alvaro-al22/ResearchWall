@@ -11,6 +11,8 @@ import CharacterNode from './CharacterNode';
 import CustomRelationshipEdge from './CustomRelationshipEdge';
 import CharacterForm from './CharacterForm';
 import RelationshipForm from './RelationshipForm';
+import WatsonPanel from './WatsonPanel';
+import type { WatsonUpdate, WatsonRelationshipCreate, WatsonProjectUpdate } from '../lib/watson';
 import type { Project, Character, Relationship } from '../types';
 import * as db from '../lib/db';
 
@@ -295,6 +297,51 @@ export default function BoardView({ project, onBack }: Props) {
     e.target.value = '';
   }
 
+  async function handleWatsonUpdates(updates: WatsonUpdate[], newRels: WatsonRelationshipCreate[], projectUpdate?: WatsonProjectUpdate) {
+    // Apply character updates
+    const updated: Character[] = [];
+    for (const upd of updates) {
+      const result = await db.updateCharacter(upd.characterId, upd.changes);
+      if (result) updated.push(result);
+    }
+    if (updated.length > 0) {
+      setCharacters(prev => {
+        const map = new Map(updated.map(c => [c.id, c]));
+        return prev.map(c => map.get(c.id) ?? c);
+      });
+      setNodes(prev => prev.map(n => {
+        const upd = updated.find(c => c.id === n.id);
+        if (!upd) return n;
+        return { ...n, data: { ...n.data, ...characterToNode(upd).data } };
+      }));
+    }
+    // Create new relationships
+    for (const rel of newRels) {
+      const created = await db.createRelationship({
+        project_id: project.id,
+        source_id: rel.sourceId,
+        target_id: rel.targetId,
+        type: rel.type,
+        label: rel.label,
+        intensity: rel.intensity,
+        bidirectional: rel.bidirectional,
+        status: rel.status,
+      });
+      if (created) {
+        setRelationships(prev => [...prev, created]);
+        setEdges(prev => addEdge(relationshipToEdge(created), prev));
+      }
+    }
+    // Update project story/description
+    if (projectUpdate && (projectUpdate.story !== undefined || projectUpdate.description !== undefined)) {
+      await db.updateProject(project.id, projectUpdate);
+      if (projectUpdate.story !== undefined) {
+        setStory(projectUpdate.story);
+        setStoryDirty(false);
+      }
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-zinc-950 text-white">
@@ -444,13 +491,14 @@ export default function BoardView({ project, onBack }: Props) {
           deleteKeyCode="Delete"
         >
           <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#3f3f46" />
-          <Controls className="bg-zinc-800 fill-white" />
+          <Controls />
           <MiniMap
             nodeColor={n => String((n.data as { color?: string }).color ?? '#555')}
             maskColor="rgba(10,10,15,0.75)"
-            style={{ background: '#18181b', borderRadius: '12px', border: '1px solid #3f3f46' }}
+            position="top-right"
+            style={{ top: 10 }}
           />
-          <Panel position="top-right" className="bg-zinc-800/80 backdrop-blur text-zinc-400 text-xs px-3 py-2 rounded-lg border border-zinc-700">
+          <Panel position="top-left" className="bg-zinc-800/80 backdrop-blur text-zinc-400 text-xs px-3 py-2 rounded-lg border border-zinc-700">
             Clic: voltear tarjeta · Doble clic: editar · Clic der.: mover lienzo · <kbd className="bg-zinc-700 px-1 rounded">Del</kbd>: eliminar
           </Panel>
         </ReactFlow>
@@ -479,6 +527,14 @@ export default function BoardView({ project, onBack }: Props) {
           onClose={() => { setPendingConn(null); setEditRel(undefined); }}
         />
       )}
+
+      {/* ── Watson ── */}
+      <WatsonPanel
+        project={project}
+        characters={characters}
+        relationships={relationships}
+        onApplyUpdates={handleWatsonUpdates}
+      />
     </div>
   );
 }
