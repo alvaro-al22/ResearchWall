@@ -57,6 +57,7 @@ create table if not exists characters (
 
   -- Extra
   notes text,
+  tags text[] default '{}',
   created_at timestamptz default now()
 );
 
@@ -75,6 +76,11 @@ create table if not exists relationships (
 
   created_at timestamptz default now()
 );
+
+-- ================================================================
+-- MIGRACIÓN: ejecuta esto si ya tenías la tabla creada antes
+-- ================================================================
+ALTER TABLE characters ADD COLUMN IF NOT EXISTS tags text[] DEFAULT '{}';
 
 -- ================================================================
 -- OPCIONAL: Row Level Security (cuando añadas autenticación)

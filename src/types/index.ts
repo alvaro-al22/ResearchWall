@@ -36,6 +36,7 @@ export type Character = {
   position_x: number;
   position_y: number;
   notes?: string;
+  tags?: string[];
   created_at?: string;
 };
 

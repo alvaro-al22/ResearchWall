@@ -1,6 +1,7 @@
 import { memo, useState, useRef, useEffect } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import type { NodeProps, Node } from '@xyflow/react';
+import { TAG_COLOR } from '../constants/caseTags';
 
 export type CharacterNodeData = {
   label: string;
@@ -14,7 +15,9 @@ export type CharacterNodeData = {
   birthplace?: string;
   residence?: string;
   profession?: string;
+  tags?: string[];
 };
+
 
 export type CharacterNodeType = Node<CharacterNodeData, 'character'>;
 
@@ -68,7 +71,8 @@ function CharacterNode({ data, dragging }: NodeProps<CharacterNodeType>) {
         setFlipped(f => !f);
       }}
     >
-      <Handle type="target" position={Position.Top} className="w-2.5 h-2.5 bg-blue-400 border-2 border-zinc-900" />
+      {/* Single connection point at top center */}
+      <Handle type="source" position={Position.Top} className="w-3 h-3 bg-zinc-500 border-2 border-zinc-900" />
 
       {/* Flip wrapper */}
       <div style={{ perspective: '900px' }}>
@@ -104,9 +108,21 @@ function CharacterNode({ data, dragging }: NodeProps<CharacterNodeType>) {
                 </div>
               </div>
             </div>
-            <div className="mt-2 text-white/25 text-[9px] text-center tracking-wide">
+            <div className="mt-1.5 text-white/25 text-[9px] text-center tracking-wide">
               {hasDetails ? '↻ clic para detalles' : '↻ clic para voltear'}
             </div>
+            {data.tags && data.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-1.5">
+                {data.tags.slice(0, 2).map(t => (
+                  <span key={t}
+                    style={{ color: TAG_COLOR[t] ?? '#9ca3af', borderColor: (TAG_COLOR[t] ?? '#9ca3af') + '66', backgroundColor: (TAG_COLOR[t] ?? '#9ca3af') + '22' }}
+                    className="text-[8px] font-bold px-1.5 leading-5 rounded-full border">
+                    {t}
+                  </span>
+                ))}
+                {data.tags.length > 2 && <span className="text-[8px] text-white/25">+{data.tags.length - 2}</span>}
+              </div>
+            )}
           </div>
 
           {/* ── BACK ── */}
@@ -157,7 +173,7 @@ function CharacterNode({ data, dragging }: NodeProps<CharacterNodeType>) {
         </div>
       </div>
 
-      <Handle type="source" position={Position.Bottom} className="w-2.5 h-2.5 bg-rose-400 border-2 border-zinc-900" />
+      {/* no bottom handle */}
     </div>
   );
 }

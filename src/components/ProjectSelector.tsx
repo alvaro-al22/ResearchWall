@@ -33,7 +33,7 @@ export default function ProjectSelector({ onSelect }: Props) {
 
   async function handleDelete(id: string, e: React.MouseEvent) {
     e.stopPropagation();
-    if (!confirm('¿Eliminar este proyecto y todos sus personajes? Esta acción es irreversible.')) return;
+    if (!confirm('¿Eliminar este caso y todos sus sujetos? Esta acción es irreversible.')) return;
     await db.deleteProject(id);
     setProjects(prev => prev.filter(p => p.id !== id));
   }
@@ -45,28 +45,28 @@ export default function ProjectSelector({ onSelect }: Props) {
           <h1 className="text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-600">
             Research Wall
           </h1>
-          <p className="text-zinc-500 mt-3 text-lg">Tu espacio de investigación visual e interactivo</p>
+          <p className="text-zinc-500 mt-3 text-lg">Tablero de investigación visual</p>
         </div>
 
         <div className="flex justify-between items-center mb-5">
-          <h2 className="text-lg font-semibold text-zinc-300">Proyectos</h2>
+          <h2 className="text-lg font-semibold text-zinc-300">Casos</h2>
           <button
             onClick={() => setCreating(true)}
             className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer"
           >
-            + Nuevo Proyecto
+            + Nuevo Caso
           </button>
         </div>
 
         {creating && (
           <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-5 mb-5">
-            <h3 className="font-semibold mb-4 text-zinc-200">Nuevo Proyecto</h3>
+            <h3 className="font-semibold mb-4 text-zinc-200">Nuevo Caso</h3>
             <input
               autoFocus
               value={newName}
               onChange={e => setNewName(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleCreate()}
-              placeholder="Nombre del proyecto"
+              placeholder="Nombre del caso"
               className="w-full bg-zinc-800 border border-zinc-700 focus:border-blue-500 rounded-lg px-3 py-2.5 text-sm mb-3 outline-none"
             />
             <textarea
@@ -91,9 +91,9 @@ export default function ProjectSelector({ onSelect }: Props) {
           <p className="text-zinc-500 text-center py-12">Cargando proyectos...</p>
         ) : projects.length === 0 ? (
           <div className="text-center py-16 text-zinc-600 border border-dashed border-zinc-800 rounded-xl">
-            <p className="text-5xl mb-4">📌</p>
-            <p className="text-lg font-medium text-zinc-500">No tienes proyectos aún</p>
-            <p className="text-sm mt-1">Crea tu primer muro de investigación</p>
+            <p className="text-5xl mb-4">�</p>
+            <p className="text-lg font-medium text-zinc-500">No hay casos aún</p>
+            <p className="text-sm mt-1">Abre tu primer caso de investigación</p>
           </div>
         ) : (
           <div className="grid gap-3">
@@ -105,7 +105,7 @@ export default function ProjectSelector({ onSelect }: Props) {
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">📋</span>
+                    <span className="text-lg">�</span>
                     <h3 className="font-bold text-white group-hover:text-blue-400 transition-colors truncate">{p.name}</h3>
                   </div>
                   {p.description && <p className="text-zinc-500 text-sm mt-1 truncate pl-7">{p.description}</p>}
@@ -116,7 +116,7 @@ export default function ProjectSelector({ onSelect }: Props) {
                 <button
                   onClick={(e) => handleDelete(p.id, e)}
                   className="text-zinc-700 hover:text-red-500 transition-colors text-lg ml-4 flex-shrink-0 cursor-pointer"
-                  title="Eliminar proyecto"
+                  title="Eliminar caso"
                 >
                   🗑️
                 </button>
